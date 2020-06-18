@@ -43,7 +43,7 @@ public class PhotoViewerMainActivity extends AppCompatActivity {
             }
         });
 
-        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+
         //ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.MEDIA_CONTENT_CONTROL},1);
         //ListPhoto();
         initFruits();
@@ -60,7 +60,21 @@ public class PhotoViewerMainActivity extends AppCompatActivity {
 
     }
 
-//    @Override
+    @Override
+    protected void onStart() {
+
+        super.onStart();
+
+        initFruits();
+        RecyclerView recyclerView =  findViewById(R.id.recycler_view);
+        StaggeredGridLayoutManager layoutManager = new
+                StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.VERTICAL);
+        recyclerView.setLayoutManager(layoutManager);
+        ImageAdapter adapter = new ImageAdapter(imageInforArrayList);
+        recyclerView.setAdapter(adapter);
+    }
+
+    //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
 //        getMenuInflater().inflate(R.menu.main,menu);
 //        return true;
@@ -83,8 +97,11 @@ public class PhotoViewerMainActivity extends AppCompatActivity {
 //    }
     private void initFruits()
     {
+        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+        imageInforArrayList = new ArrayList<>();
+
         final String[] columns = {MediaStore.Images.Media.DATA ,MediaStore.Images.Media._ID};
-        final String orderBy = MediaStore.Images.Media._ID;
+        final String orderBy = MediaStore.Images.Media.DATE_ADDED + " desc";  //倒叙查询
 //Stores all the images from the gallery in Cursor
         Cursor cursor = getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,

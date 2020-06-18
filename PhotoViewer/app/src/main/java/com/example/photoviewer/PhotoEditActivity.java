@@ -1,14 +1,12 @@
 package com.example.photoviewer;
 
-import androidx.annotation.RequiresPermission;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.appcompat.widget.WithHint;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
-import android.app.Dialog;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -18,12 +16,13 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.DrawView.DrawView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,15 +30,29 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 
-public class PhotoEditActivity extends AppCompatActivity {
+public class PhotoEditActivity extends AppCompatActivity  {
 
 
-    private boolean photosaved = true;
-    ImageView editImageView;
+    private boolean photoRotated = false;
+
+    DrawView editImageView;
     Bitmap bitmap;
     final static int rotateAngle = 90;
+    final static int NumToSame = 360/rotateAngle;
     int rotateNum = 0;
 
+    // 涂鸦的相关数据
+    private boolean isDrawable = false;
+    //public  Bitmap drawBitmap;
+    private boolean haveDrawn = false;
+
+
+
+
+
+
+
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,8 +86,13 @@ public class PhotoEditActivity extends AppCompatActivity {
 
 
                     case DialogInterface.BUTTON_POSITIVE:
-                        saveImageToGallery(PhotoEditActivity.this,bitmap);
-                        photosaved = true;
+                        if(haveDrawn ) {
+                            Log.i("drawnPhoto","store drawnPhoto");
+                            saveImageToGallery(PhotoEditActivity.this, editImageView.getCacheBitmap());
+                        }
+                        else if(photoRotated)
+                            saveImageToGallery(PhotoEditActivity.this,bitmap);
+                        photoRotated = false;
                         dialog.dismiss();
                         finish();
                         break;
@@ -91,7 +109,7 @@ public class PhotoEditActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if(photosaved)
+                if(!photoRotated&&!haveDrawn)
                 finish();
                 else
                 {
@@ -106,12 +124,14 @@ public class PhotoEditActivity extends AppCompatActivity {
          editImageView = findViewById(R.id.editImageView);
         final Button rotateBtn = findViewById(R.id.rotate_button);
         final TextView savedBtn = findViewById(R.id.save_btn);
+        final Button drawBtn = findViewById(R.id.paint_button);
         editImageView.setImageURI(Uri.parse(currentImagePath));
+        bitmap = BitmapFactory.decodeFile(currentImagePath);
         rotateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ++rotateNum;
-                int NumToSame = 360/rotateAngle; // 旋转回原来需要的次数；
+                 // 旋转回原来需要的次数；
 
 
                 Matrix matrix = new Matrix(); //旋转图片 动作
@@ -125,26 +145,79 @@ public class PhotoEditActivity extends AppCompatActivity {
                 bitmap=resizedBitmap;
                 editImageView.setImageBitmap(bitmap);
 
-                if(rotateNum%NumToSame ==0)
-                    photosaved =true;
-                else
-                    photosaved =false;
+                if(rotateNum%NumToSame ==0) {
+                    editImageView.setImageBitmap(bitmap);
+
+                    photoRotated = false;
+                }
+                else {
+
+                    photoRotated = true;
+                }
             }
         });
         savedBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!photosaved)
+                if(haveDrawn)
+                {
+                    Log.i("drawnPhoto","store drawnPhoto");
+                    saveImageToGallery(PhotoEditActivity.this,editImageView.getCacheBitmap());
+                    haveDrawn = false;
+
+                }
+
+                else if(rotateNum%NumToSame !=0 )
                 {
                     saveImageToGallery(PhotoEditActivity.this,bitmap);
-                    photosaved = true;
+                    photoRotated = false;
                     rotateNum=0;
                 }
             }
         });
 
+        drawBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isDrawable)      //可涂鸦时按下会还原
+                {
+                    isDrawable= false;
+                    haveDrawn = false;
+                    drawBtn.setText("涂鸦");
+                    editImageView.setDrawable(isDrawable);
+                    editImageView.setImageBitmap(bitmap);
+                    rotateBtn.setClickable(true);
+                    editImageView.clear();
+
+
+
+                }else{      // 不可涂鸦时按下会初始化涂鸦状态
+                    isDrawable = true;
+                    drawBtn.setText("取消涂鸦");
+                    editImageView.setDrawable(isDrawable);
+                    rotateBtn.setClickable(false);
+
+                    editImageView.setImageBitmap(bitmap);
+
+
+                }
+            }
+        });
+
+        editImageView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if(isDrawable)
+                    haveDrawn = true;
+                return false;
+            }
+        });
+
+
+
 
     }
+
 
 
 
@@ -194,6 +267,22 @@ public class PhotoEditActivity extends AppCompatActivity {
         context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(file.getPath()))));
     }
 
+
+//    private boolean isInView(View view,int x,int y)
+//    {
+//        if(view == null)
+//            return false;
+//        int[] location = new int[2];
+//        view.getLocationOnScreen(location);
+//        int left = location[0];
+//        int top = location[1];
+//        int right = left +view.getMeasuredWidth();
+//        int bottom = top +view.getMeasuredHeight();
+//        if(y>=top&&y<=bottom&&x>=left&&x<=right)
+//            return true;
+//
+//        return false;
+//    }
 
 
 }

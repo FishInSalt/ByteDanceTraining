@@ -13,7 +13,7 @@
         android:roundIcon="@mipmap/album"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:requestLegacyExternalStorage="true"
+
         >
         <activity android:name=".PhotoEditActivity"
             android:label="EditActivity"

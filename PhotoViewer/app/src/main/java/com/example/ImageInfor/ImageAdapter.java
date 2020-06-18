@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,8 +13,10 @@ import android.widget.ImageSwitcher;
 import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.core.view.ViewGroupCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.photoviewer.PhotoDetailActivity;
 import com.example.photoviewer.PhotoViewerMainActivity;
 import com.example.photoviewer.R;
 
@@ -26,25 +29,31 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
     private ArrayList<imageInfor> imageInforList;
     private int currentIndex=0;
 
+
+
     public interface OnItemClickListener{
         void onItemClick(View view,int position);
     }
 
     private  OnItemClickListener mOnItemClickListener;
+
+
     static class ViewHolder extends RecyclerView.ViewHolder{
         ImageView image;
         //TextView fruitName;
         //Context context;
 
-        View fruitView;
+        //View photoView;
         public ViewHolder(View view)
         {
             super(view);
-            fruitView = view;
+            //photoView = view;
             image = (ImageView) view.findViewById(R.id.image_thumbnail);
             //fruitName = (TextView) view.findViewById(R.id.fruit_name);
 
         }
+
+        public ImageView getImage(){return image;}
 
 
     }
@@ -52,9 +61,13 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
 
     public ImageAdapter(ArrayList<imageInfor> objects)
     {
+
         imageInforList = objects;
 
     }
+
+
+
 
     @NonNull
     @Override
@@ -64,6 +77,8 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
 
 
         final ViewHolder holder = new ViewHolder(view);
+        holder.itemView.getBackground().setAlpha(100);          //设置背景的透明度
+
 
 
 
@@ -103,7 +118,7 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
-        imageInfor fruit = imageInforList.get(position);
+        imageInfor photoInfor = imageInforList.get(position);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,6 +147,7 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
                         imageInfor imageInfor = imageInforList.get(position);
                         ImageSwitcher imageSwitcher = v.getRootView().findViewById(R.id.imageDetail_switcher);
                         imageSwitcher.setImageURI(Uri.parse( imageInfor.getImagePath()));
+                        //传当前的缩略图位置
                         mOnItemClickListener.onItemClick(v,position );
                         currentIndex = position;
                     }
@@ -140,7 +156,7 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
             }
         });
         // holder.fruitName.setText(fruit.getName());
-        Bitmap thumbnail = android.provider.MediaStore.Images.Thumbnails.getThumbnail(holder.fruitView.getContext().getContentResolver(),fruit.getImageId(),
+        Bitmap thumbnail = android.provider.MediaStore.Images.Thumbnails.getThumbnail(holder.image.getContext().getContentResolver(),photoInfor.getImageId(),
                 MediaStore.Images.Thumbnails.MINI_KIND,new BitmapFactory.Options());
         holder.image.setImageBitmap(thumbnail);
         //holder.image.setTag(position);
@@ -152,6 +168,7 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
         return imageInforList.size();
     }
 
+    // 设置缩略图的item监听器，用于传输当前item的位置
     public void setOnItemClickListener(OnItemClickListener listener)
     {
         this.mOnItemClickListener = listener;
