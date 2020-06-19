@@ -26,8 +26,8 @@ import java.util.ArrayList;
 
 
 public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>  {
-    private ArrayList<imageInfor> imageInforList;
-    private int currentIndex=0;
+    private ArrayList<imageInfor> imageInforList; // 存储图片资源的数据信息链表
+    private int currentIndex=0;     //对应运行时被选中的组件的索引
 
 
 
@@ -35,21 +35,17 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
         void onItemClick(View view,int position);
     }
 
-    private  OnItemClickListener mOnItemClickListener;
+    private  OnItemClickListener mOnItemClickListener;  //该成员用于通过设置监听器传递当前被选中的索引图的索引
 
 
     static class ViewHolder extends RecyclerView.ViewHolder{
         ImageView image;
-        //TextView fruitName;
-        //Context context;
 
-        //View photoView;
         public ViewHolder(View view)
         {
             super(view);
-            //photoView = view;
             image = (ImageView) view.findViewById(R.id.image_thumbnail);
-            //fruitName = (TextView) view.findViewById(R.id.fruit_name);
+
 
         }
 
@@ -84,33 +80,6 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
 
 
 
-//        holder.image.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//
-//                if(v.getContext().getClass().getSimpleName().equals( PhotoViewerMainActivity.class.getSimpleName())) {
-//
-//
-//                    int position = holder.getAdapterPosition();
-//                    imageInfor fruit = imageInforList.get(position);
-//                    Intent intent = new Intent("com.example.photoviewer.ACTION_START");
-//                    intent.putParcelableArrayListExtra("imageList", imageInforList);
-//                    intent.putExtra("currentImage", fruit);
-//                    intent.putExtra("currentImageIndex",position);
-//                    v.getContext().startActivity(intent);
-//                }
-//                else
-//                {
-//                //    View parentView = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_detail,parent,false);
-//                    int position = holder.getAdapterPosition();
-//                    imageInfor imageInfor = imageInforList.get(position);
-//                    ImageSwitcher fruitImage = v.getRootView().findViewById(R.id.imageDetail_switcher);
-//                    fruitImage.setImageURI(Uri.parse( imageInfor.getImagePath()));
-//                    currentIndex = position;
-//                }
-//            }
-//
-//        });
 
         return holder;
 
@@ -120,47 +89,46 @@ public  class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ViewHolder>
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         imageInfor photoInfor = imageInforList.get(position);
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+        holder.itemView.setOnClickListener(new View.OnClickListener() {//设置点击事件，用于创建并传递数据给详情页活动
             @Override
             public void onClick(View v) {
 
-                if(v.getContext().getClass().getSimpleName().equals( PhotoViewerMainActivity.class.getSimpleName())) {
+                //if(v.getContext().getClass().getSimpleName().equals( PhotoViewerMainActivity.class.getSimpleName())) {
 
 
-
+                    //点击开始详情页活动
                     imageInfor fruit = imageInforList.get(position);
                     Intent intent = new Intent("com.example.photoviewer.ACTION_START");
-                    intent.putParcelableArrayListExtra("imageList", imageInforList);
-                    intent.putExtra("currentImage", fruit);
+                    //intent.putParcelableArrayListExtra("imageList", imageInforList);
+                    //intent.putExtra("currentImage", fruit);
                     intent.putExtra("currentImageIndex",position);
                     v.getContext().startActivity(intent);
-                }
+                //}
 
 
 
-                    else
-                    {
-                        if(mOnItemClickListener!=null&& currentIndex!=position)
-                        {
-                        // View parentView = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_detail,parent,false);
-
-                        imageInfor imageInfor = imageInforList.get(position);
-                        ImageSwitcher imageSwitcher = v.getRootView().findViewById(R.id.imageDetail_switcher);
-                        imageSwitcher.setImageURI(Uri.parse( imageInfor.getImagePath()));
-                        //传当前的缩略图位置
-                        mOnItemClickListener.onItemClick(v,position );
-                        currentIndex = position;
-                    }
-                }
+//                    else
+//                    {
+//                        if(mOnItemClickListener!=null&& currentIndex!=position)
+//                        {
+//                        // View parentView = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_detail,parent,false);
+//
+//                        imageInfor imageInfor = imageInforList.get(position);
+//                        ImageSwitcher imageSwitcher = v.getRootView().findViewById(R.id.imageDetail_switcher);
+//                        imageSwitcher.setImageURI(Uri.parse( imageInfor.getImagePath()));
+//                        //传当前的缩略图位置
+//                        mOnItemClickListener.onItemClick(v,position );
+//                        currentIndex = position;
+//                    }
+//                }
 
             }
         });
-        // holder.fruitName.setText(fruit.getName());
+        //设置holder的内容，即缩略图
         Bitmap thumbnail = android.provider.MediaStore.Images.Thumbnails.getThumbnail(holder.image.getContext().getContentResolver(),photoInfor.getImageId(),
                 MediaStore.Images.Thumbnails.MINI_KIND,new BitmapFactory.Options());
         holder.image.setImageBitmap(thumbnail);
-        //holder.image.setTag(position);
-        //holder.fruitImage.setBackgroundColor(Color.RED);
+
     }
 
     @Override

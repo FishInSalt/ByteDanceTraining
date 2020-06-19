@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.Manifest;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -30,8 +31,10 @@ public class PhotoViewerMainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.thumbnail_layout);
+        setContentView(R.layout.thumbnail_layout);      //缩略图页面
 
+
+        //工具栏
         Toolbar toolbar = findViewById(R.id.main_tool_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -44,15 +47,14 @@ public class PhotoViewerMainActivity extends AppCompatActivity {
         });
 
 
-        //ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.MEDIA_CONTENT_CONTROL},1);
-        //ListPhoto();
-        initFruits();
-        RecyclerView recyclerView =  findViewById(R.id.recycler_view);
-        StaggeredGridLayoutManager layoutManager = new
-                StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.VERTICAL);
-        recyclerView.setLayoutManager(layoutManager);
-        ImageAdapter adapter = new ImageAdapter(imageInforArrayList);
-        recyclerView.setAdapter(adapter);
+        //初始化图片链表，设置recyclerView
+//        initImageList();
+//        RecyclerView recyclerView =  findViewById(R.id.recycler_view);
+//        StaggeredGridLayoutManager layoutManager = new
+//                StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.VERTICAL);
+//        recyclerView.setLayoutManager(layoutManager);
+//        ImageAdapter adapter = new ImageAdapter(imageInforArrayList);
+//        recyclerView.setAdapter(adapter);
 
 
 
@@ -64,8 +66,8 @@ public class PhotoViewerMainActivity extends AppCompatActivity {
     protected void onStart() {
 
         super.onStart();
-
-        initFruits();
+        //初始化图片链表，设置recyclerView
+        initImageList();
         RecyclerView recyclerView =  findViewById(R.id.recycler_view);
         StaggeredGridLayoutManager layoutManager = new
                 StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.VERTICAL);
@@ -95,28 +97,25 @@ public class PhotoViewerMainActivity extends AppCompatActivity {
 //        }
 //        return  true;
 //    }
-    private void initFruits()
+    private void initImageList()    //初始化图片链表
     {
+        //权限
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
         imageInforArrayList = new ArrayList<>();
-
+        //查询手机资源，并按时间先后排序
         final String[] columns = {MediaStore.Images.Media.DATA ,MediaStore.Images.Media._ID};
         final String orderBy = MediaStore.Images.Media.DATE_ADDED + " desc";  //倒叙查询
-//Stores all the images from the gallery in Cursor
         Cursor cursor = getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
                 null, orderBy);
-//Total number of images
         int count = cursor.getCount();
 
-//Create an array to store path to all the images
         String[] arrPath = new String[count];
-
+        //讲图片资源信息放入链表
         for (int i = 0; i < count; i++) {
             cursor.moveToPosition(i);
             int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
             int idColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-            //Store the path of the image
             arrPath[i] = cursor.getString(dataColumnIndex);
             Uri fruitUri  = Uri.parse(arrPath[i]);
             String[] fruitInfor = arrPath[i].split("/");
@@ -124,45 +123,16 @@ public class PhotoViewerMainActivity extends AppCompatActivity {
 
             imageInfor fruitItem = new imageInfor(fruitName,arrPath[i],cursor.getLong(idColumnIndex));
             imageInforArrayList.add(fruitItem);
-            Log.i("PATH", arrPath[i]);
+            //Log.i("PATH", arrPath[i]);
         }
-// The cursor should be freed up after use with close()
         cursor.close();
 
 
     }
-//    public void ListPhoto()
-//    {
-//        if(ContextCompat.checkSelfPermission(PhotoViewerMainActivity.this,Manifest.permission.READ_EXTERNAL_STORAGE )
-//                                                != PackageManager.PERMISSION_GRANTED)
-//        {
-//            Log.i("PATH","get photo false");
-//        }
-//        else {
-//            Log.i("PATH","get photo true");
-//            final String[] columns = {MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID};
-//            final String orderBy = MediaStore.Images.Media._ID;
-////Stores all the images from the gallery in Cursor
-//            Cursor cursor = getContentResolver().query(
-//                    MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
-//                    null, orderBy);
-////Total number of images
-//            int count = cursor.getCount();
-//
-////Create an array to store path to all the images
-//            String[] arrPath = new String[count];
-//
-//            for (int i = 0; i < count; i++) {
-//                cursor.moveToPosition(i);
-//                int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
-//                //Store the path of the image
-//                arrPath[i] = cursor.getString(dataColumnIndex);
-//                Log.i("PATH", arrPath[i]);
-//            }
-//// The cursor should be freed up after use with close()
-//            cursor.close();
-//
-//        }
-//    }
+
+    public void waitForAccept(View view){
+        Intent intent = new Intent(this, AcceptActivity.class);
+        startActivity(intent);
+    }
 
 }

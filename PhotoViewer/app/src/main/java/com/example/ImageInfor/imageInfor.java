@@ -3,10 +3,16 @@ package com.example.ImageInfor;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+/*
+    该类用于存储媒体图片的信息，包括名字，路径等
+    实现 parcelable接口，使其可以在不同活动传输
+ */
+
+
 public final class imageInfor implements Parcelable {
-    private  String name;
-    private String  imagePath;
-    private  long imageId;
+    private  String name;       //名称
+    private String  imagePath;  //路径
+    private  long imageId;      //资源id
 
 
 
@@ -37,6 +43,10 @@ public final class imageInfor implements Parcelable {
     {
         return  imageId;
     }
+
+
+
+    //parcelable的实现
 
     @Override
     public int describeContents() {

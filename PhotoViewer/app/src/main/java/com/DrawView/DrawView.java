@@ -9,6 +9,9 @@ import android.graphics.Path;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.widget.ImageView;
+/*
+    自定义组件，一个保存涂鸦数据的ImageView
+ */
 
 public class DrawView extends androidx.appcompat.widget.AppCompatImageView{
     float downX,downY;
@@ -18,7 +21,7 @@ public class DrawView extends androidx.appcompat.widget.AppCompatImageView{
     //画笔
     private Paint paint = null;
 
-    private boolean drawable ;
+    private boolean drawable ;  // 设置组件是否可涂鸦
 
 
 
@@ -43,6 +46,8 @@ public class DrawView extends androidx.appcompat.widget.AppCompatImageView{
         init();
 
     }
+
+    //初始化组件
     private void  init(){
         drawable = false;
         paint = new Paint();
@@ -55,7 +60,7 @@ public class DrawView extends androidx.appcompat.widget.AppCompatImageView{
 
 
     }
-
+    //重载setImageBitmap函数，调用时初始化成员cacheBitmap和cacheCanvas
     @Override
     public void setImageBitmap(Bitmap bm) {
         this.cacheBitmap = Bitmap.createBitmap(bm.getWidth(),bm.getHeight(),bm.getConfig());
@@ -64,17 +69,16 @@ public class DrawView extends androidx.appcompat.widget.AppCompatImageView{
 
         super.setImageBitmap(bm);
     }
-
+    //
     public void setDrawable(boolean drawable)
     {this.drawable = drawable;}
 
     public boolean isDrawable(){return drawable;}
 
     @Override
-    protected void onDraw(Canvas canvas) {
+    protected void onDraw(Canvas canvas) { //该函数在其初始化和每次invalidate时调用
         super.onDraw(canvas);
-//        if(cacheBitmap!=null)
-//            canvas.drawBitmap(cacheBitmap,0,0,paint);
+
         if(path!=null&&cacheCanvas!=null) {
             cacheCanvas.drawPath(path, paint);
             cacheCanvas.save();
@@ -85,7 +89,7 @@ public class DrawView extends androidx.appcompat.widget.AppCompatImageView{
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) { //绘制涂鸦路径
         if (drawable) {
 
 
@@ -119,9 +123,11 @@ public class DrawView extends androidx.appcompat.widget.AppCompatImageView{
         return false;
     }
 
+    //返回绘制的涂鸦图片
     public Bitmap getCacheBitmap(){
 
         return cacheBitmap;}
+    //清除绘画的路径
     public void clear(){
         path.reset();
     }

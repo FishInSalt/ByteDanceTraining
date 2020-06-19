@@ -3,7 +3,15 @@
     package="com.example.photoviewer">
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
 
     <application
@@ -15,6 +23,14 @@
         android:theme="@style/AppTheme"
 
         >
+        <service
+            android:name=".ServerIntentService"
+            android:exported="false"></service>
+
+        <activity android:name=".AcceptActivity"
+            android:launchMode="singleTask"/>
+        <activity android:name=".WifiActivity"
+            android:launchMode="singleTask"/>
         <activity android:name=".PhotoEditActivity"
             android:label="EditActivity"
             android:launchMode="singleTask"
@@ -25,7 +41,6 @@
         </activity>
         <activity
             android:name=".PhotoViewerMainActivity"
-            android:label="PVMainActivity"
             android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

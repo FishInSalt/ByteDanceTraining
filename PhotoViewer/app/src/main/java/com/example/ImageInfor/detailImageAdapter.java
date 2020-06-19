@@ -21,22 +21,24 @@ import com.example.photoviewer.R;
 import java.security.spec.PSSParameterSpec;
 import java.util.ArrayList;
 
+/*
+    该adapter用于显示详情页中的缩略图滚动条
+ */
+
 public class detailImageAdapter extends RecyclerView.Adapter<detailImageAdapter.ViewHolder> {
-    public static final int ITEM_NUM = 5;
-    private int start = 0;
-    private int end = 0;
-    private  int currentIndex = -1;
-    private ArrayList<imageInfor>  imageInforArrayList;
-    private ViewGroup.LayoutParams lp;
+    public static final int ITEM_NUM = 5;           //缩略图滚动条能显示个数
+    private  int currentIndex = -1;                 //当前的索引值
+    private ArrayList<imageInfor>  imageInforArrayList;  // 图片资源的数链
+    //private ViewGroup.LayoutParams lp;
 
     public detailImageAdapter(ArrayList<imageInfor> list)
     {
         imageInforArrayList = list;
-        end = list.size()-1;
+
 
 
     }
-
+    //用于监听viewholder的点击事件,然后传当前点击的位置position到详情页
     public interface OnItemClickListener{
         void onItemClick(View view,int position);
     }
@@ -49,7 +51,7 @@ public class detailImageAdapter extends RecyclerView.Adapter<detailImageAdapter.
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.photo_item,parent,false);
 
-        lp = view.getLayoutParams();
+        ViewGroup.LayoutParams lp = view.getLayoutParams();
         lp.width = getItemWidth();
         final ViewHolder holder = new ViewHolder(view);
         holder.itemView.getBackground().setAlpha(100);
@@ -61,7 +63,7 @@ public class detailImageAdapter extends RecyclerView.Adapter<detailImageAdapter.
 
 
     }
-
+    //缩略图滚动条每个item的宽度
     public static int getItemWidth(){
         DisplayMetrics displayMetrics = PhotoDetailActivity.getContext().getResources().getDisplayMetrics();
         return  displayMetrics.widthPixels/ITEM_NUM;
@@ -72,7 +74,7 @@ public class detailImageAdapter extends RecyclerView.Adapter<detailImageAdapter.
         imageInfor imgInfor = imageInforArrayList.get(position);
 
 
-
+        //获取缩略图资源
         Bitmap thumbnail = android.provider.MediaStore.Images.Thumbnails.getThumbnail(holder.getPhotoThumbnail().getContext().getContentResolver(),imgInfor.getImageId(),
                 MediaStore.Images.Thumbnails.MINI_KIND,new BitmapFactory.Options());
         holder.getPhotoThumbnail().setImageBitmap(thumbnail);
@@ -91,24 +93,12 @@ public class detailImageAdapter extends RecyclerView.Adapter<detailImageAdapter.
                     currentIndex = position;
                 }
 
-//                ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(lp.width+100,lp.height);
-//                v.setLayoutParams(layoutParams);
+
 
 
             }
         });
-//        if(isSelected(position))
-//        {
-//
-//            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(lp.width+100,lp.height);
-//            holder.itemView.setLayoutParams(layoutParams);
-//        }
-//        else
-//        {
-//            ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(lp.width,lp.height);
-//            holder.itemView.setLayoutParams(layoutParams);
-//            ;
-//        }
+
 
 
 
@@ -127,28 +117,23 @@ public class detailImageAdapter extends RecyclerView.Adapter<detailImageAdapter.
         return  currentIndex == position;
     }
 
-//    public void highlightItem(int position){
-//        currentIndex = position;
-//        int offset = ITEM_NUM/2;
-//        for(int i = position-offset;i<position+offset;++i)
-//            notifyItemChanged(i);
-//    }
 
-    public ViewGroup.LayoutParams getLp(){return lp;}
+
+   // public ViewGroup.LayoutParams getLp(){return lp;}
     public static int  getItemNum(){return ITEM_NUM;}
 
     @Override
     public int getItemCount() {
         return imageInforArrayList.size();
     }
-
+    //内部类
     static class ViewHolder extends RecyclerView.ViewHolder{
         private ImageView photoThumbnail;
         public ViewHolder(View view)
         {
             super(view);
             photoThumbnail = (ImageView) view.findViewById(R.id.image_thumbnail);
-            //photoThumbnail.setTag(this);
+
         }
         public ImageView getPhotoThumbnail(){return  photoThumbnail;}
     }

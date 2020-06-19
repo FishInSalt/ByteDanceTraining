@@ -1,26 +1,20 @@
 package com.example.photoviewer;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.view.GestureDetectorCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SnapHelper;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.PeriodicSync;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.Html;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -30,13 +24,11 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageSwitcher;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import com.example.ImageInfor.detailImageAdapter;
 import com.example.ImageInfor.imageInfor;
-import com.example.ImageInfor.ImageAdapter;
 import com.photoview.PhotoView;
 
 import java.util.ArrayList;
@@ -68,7 +60,7 @@ public class PhotoDetailActivity extends AppCompatActivity
     private float up_x = 0;
     private float up_y =0;
 
-    private static Context context;
+    private static Context context;     //该上下文用于向detailImageAdapter 传输应用的上下文，以获取应用的尺寸大小
 
 
     @Override
@@ -79,14 +71,11 @@ public class PhotoDetailActivity extends AppCompatActivity
 
         setContentView(R.layout.photo_detail);
 
-        //Toolbar toolbar =
         //工具栏的设置
         toolbar = findViewById(R.id.detail_tool_bar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true); //工具栏的返回键
         getSupportActionBar().setDisplayShowTitleEnabled(false);
-        //toolbar.bringToFront();           //将toolbar放在最上层显示
-        //toolbar.setAlpha(1f);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -94,9 +83,8 @@ public class PhotoDetailActivity extends AppCompatActivity
                 finish();
             }
         });
-
+        // 编辑按钮的功能
         TextView editText = findViewById(R.id.edit_text);
-
         editText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,22 +94,30 @@ public class PhotoDetailActivity extends AppCompatActivity
             }
         });
 
-        //获取屏幕高度和宽度
+        //获取屏幕高度和宽度 用于上下和左右滑动手势检测
         WindowManager manager = this.getWindowManager();
         DisplayMetrics outMetrics = new DisplayMetrics();
         manager.getDefaultDisplay().getMetrics(outMetrics);
         screenWidth = outMetrics.widthPixels;
         screenHeight = outMetrics.heightPixels;
 
-        detailRecycler = findViewById(R.id.photo_thumbnail);
-//        imageSwitcher.onInterceptTouchEvent()
+
+
+
 
         //从主活动传来的图片链表信息
         Intent intent = getIntent();
-        imageInforArrayList = intent.getParcelableArrayListExtra("imageList");
-        final imageInfor currentFruit = intent.getParcelableExtra("currentImage");
+        //imageInforArrayList = intent.getParcelableArrayListExtra("imageList");
+        //final imageInfor currentFruit = intent.getParcelableExtra("currentImage");
          currentImageIndex = intent.getIntExtra("currentImageIndex",0);
-         imageSwitcher = findViewById(R.id.imageDetail_switcher);
+
+        detailRecycler = findViewById(R.id.photo_thumbnail);
+        imageSwitcher = findViewById(R.id.imageDetail_switcher);
+        initImageList();
+        initDetailRecycler();
+
+
+
          imageSwitcher.setFactory(this);
 //         imageSwitcher.setOnTouchListener(new View.OnTouchListener() {
 //             @Override
@@ -211,56 +207,29 @@ public class PhotoDetailActivity extends AppCompatActivity
 
         //StaggeredGridLayoutManager staggeredGridLayoutManager = new StaggeredGridLayoutManager(3,StaggeredGridLayoutManager.HORIZONTAL);
 
+
+
+
+
         //recyclerView页滚动优化
+
+
         PagerSnapHelper snapHelper = new PagerSnapHelper();
         snapHelper.attachToRecyclerView(detailRecycler);
 
 
-        initDetailRecycler();
-        //LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
-        //layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
 
 
 
-//        detailRecycler.setLayoutManager(layoutManager);
-//        //detailRecycler.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-//        //ImageAdapter myAdapter =  new ImageAdapter(imageInforArrayList);
-//        detailImageAdapter detailImageAdapter = new detailImageAdapter(imageInforArrayList);
-
-        //传视图下面的缩略图的位置，并修改当前的位置为缩略图位置
-
-        //detailRecycler.setAdapter(myAdapter);
-//        detailRecycler.setAdapter(detailImageAdapter);
+//        Log.i("fruitlist","list size is "+ imageInforArrayList.size());
+//        for (imageInfor fruit: imageInforArrayList
+//             ) {
+//            Log.i("fruitlist",fruit.getName());
 //
-//        detailRecycler.scrollToPosition(currentImageIndex);
-
-//        detailRecycler.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if(listView == false)
-//                {
-//                    listView = true;
-//                    detailRecycler.setAlpha(1);
-//                    detailRecycler.setClickable(true);
-//
-//                }
-//
-//            }
-//        });
-
-
-
-
-
-        Log.i("fruitlist","list size is "+ imageInforArrayList.size());
-        for (imageInfor fruit: imageInforArrayList
-             ) {
-            Log.i("fruitlist",fruit.getName());
-
-        }
+//        }
 
         //imageSwitcher.setOnScrollChangeListener();
-        // for testing gestures Detector;
+        // 手势检测器
         mDetector = new GestureDetectorCompat(this,this);
         mDetector.setOnDoubleTapListener(this);
 
@@ -271,11 +240,13 @@ public class PhotoDetailActivity extends AppCompatActivity
         return context;
     }
 
+    //初始化详情页的缩略图滚动条
     public void initDetailRecycler()
     {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
         detailRecycler.setLayoutManager(layoutManager);
         adapter = new detailImageAdapter(imageInforArrayList);
+        //设置item的点击监听事件，把点击的位置传给当前位置索引，使得左右切图和缩略图切图位置保持一致
         adapter.setOnItemClickListener(new detailImageAdapter.OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
@@ -288,24 +259,19 @@ public class PhotoDetailActivity extends AppCompatActivity
         detailRecycler.smoothScrollToPosition(currentImageIndex + detailImageAdapter.getItemNum()/2);
 //        adapter.highlightItem(getMiddlePosition());
     }
-    private int getMiddlePosition(){
-        return getScrollPosition()+(detailImageAdapter.getItemNum()/2);
-    }
-
-
-    private int getScrollPosition(){
-        return (int)((double)detailRecycler.computeHorizontalScrollOffset()/ (double)detailImageAdapter.getItemWidth());
-    }
+//
 
     @Override
     public  boolean onTouchEvent(MotionEvent event)
     {
         mDetector.onTouchEvent(event);
-
+        //得到当前的缩放情况
         PhotoView imageView = (PhotoView) imageSwitcher.getCurrentView();
         float currentScale = imageView.getScale();
 
         Log.d(DEBUG_TAG,"onTouchEvent"+event.toString());
+
+
         if(event.getAction()==MotionEvent.ACTION_DOWN){
             down_x=event.getX();
             down_y=event.getY();
@@ -321,14 +287,12 @@ public class PhotoDetailActivity extends AppCompatActivity
                     else {
                         --currentImageIndex;
                         //动画效果
-//                index= (index==0?arrayPic.length-1:index-1);
                         imageSwitcher.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_left));
                         imageSwitcher.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_right));
                         imageSwitcher.setImageURI(Uri.parse(imageInforArrayList.get(currentImageIndex).getImagePath()));
                         //处理两端的情况
                         if (currentImageIndex>=(detailImageAdapter.getItemNum()/2))
                             detailRecycler.scrollToPosition(currentImageIndex - detailImageAdapter.getItemNum()/2);
-                        //ImageAdapter adapter = (ImageAdapter) detailRecycler.getAdapter();
                         adapter.setCurrentIndex(currentImageIndex);
 
                     }
@@ -339,32 +303,23 @@ public class PhotoDetailActivity extends AppCompatActivity
                         return true;
                     else {
                         ++currentImageIndex;
-//                index=index==arrayPic.length-1?0:index+1;
                         imageSwitcher.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_in_right));
                         imageSwitcher.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.slide_out_left));
                         imageSwitcher.setImageURI(Uri.parse(imageInforArrayList.get(currentImageIndex).getImagePath()));
                         //处理两端的情况
                         if(currentImageIndex<(imageInforArrayList.size()-detailImageAdapter.getItemNum()/2))
                             detailRecycler.scrollToPosition(currentImageIndex + detailImageAdapter.getItemNum()/2);
-                        //detailImageAdapter adapter = (detailImageAdapter) detailRecycler.getAdapter();
                         adapter.setCurrentIndex(currentImageIndex);
 
                     }
                 } else if (Math.abs(up_y - down_y) > screenHeight / 4) {
                     Log.d(DEBUG_TAG, "distanceY"+Math.abs(up_y - down_y));
                     imageSwitcher.setAnimation(AnimationUtils.loadAnimation(this, R.anim.exit_down));
-//                image_switcher.setImageResource(arrayPic[index]);
-//                Intent intent=new Intent(MainActivity.this, ExitPageActivity.class);
-//                startActivity(intent);
                     finish();
                 }
-                //return true;
             }
             return true;
         }
-
-
-
 
 
         return  super.onTouchEvent(event);
@@ -378,7 +333,7 @@ public class PhotoDetailActivity extends AppCompatActivity
 
     @Override
     public boolean onDown(MotionEvent e) {
-        Log.d(DEBUG_TAG,"onDown: " + e.toString());
+        //Log.d(DEBUG_TAG,"onDown: " + e.toString());
         return true;                            //返回true使程序能继续检测后续的动作
     }
 
@@ -397,15 +352,6 @@ public class PhotoDetailActivity extends AppCompatActivity
     @Override
     public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
         Log.d(DEBUG_TAG,"onScroll: " + e1.toString()+e2.toString());
-
-
-//        Log.d(DEBUG_TAG,"onScroll: " + "distanceX"+distanceX+"   distanceY"+distanceY);
-//        if(distanceX>=(screenWidth/2))
-//        {
-//            ++currentImageIndex;
-//            imageSwitcher.setImageURI(Uri.parse(imageInforArrayList.get(currentImageIndex).getImagePath()));
-//        }
-
         return true;
     }
 
@@ -424,7 +370,8 @@ public class PhotoDetailActivity extends AppCompatActivity
     @Override
     public boolean onDoubleTap(MotionEvent e) {
         Log.d(DEBUG_TAG,"onDoubleTap: " + e.toString());
-        //RecyclerView detailRecycler = findViewById(R.id.photo_thumbnail);
+
+        //工具栏和缩略图列表与大图的交互，双击时大图放大并且工具栏和缩略图设为不可见
         if(WidgetVisible == true && !isInView(detailRecycler,(int)e.getX(),(int)e.getY())&&!isInView(toolbar,(int)e.getX(),(int)e.getY())
         ) {
             //detailRecycler.setAlpha(0);
@@ -449,17 +396,14 @@ public class PhotoDetailActivity extends AppCompatActivity
     public boolean onSingleTapConfirmed(MotionEvent e) {
         Log.d(DEBUG_TAG,"onSingleTapConfirmed: " + e.toString());
 
-        //使缩略图隐形
-        //RecyclerView detailRecycler = findViewById(R.id.photo_thumbnail);
+        //单击图片时使缩略图和隐形或者显形
         if(WidgetVisible == true && !isInView(detailRecycler,(int)e.getX(),(int)e.getY())&&!isInView(toolbar,(int)e.getX(),(int)e.getY())) {
-            //detailRecycler.setAlpha(0);
             WidgetVisible = false;
             detailRecycler.setVisibility(View.INVISIBLE);
 
             toolbar.setVisibility(View.INVISIBLE);
         }
         else{
-            //detailRecycler.setAlpha(1);
             WidgetVisible = true;
             detailRecycler.setVisibility(View.VISIBLE);
             toolbar.setVisibility(View.VISIBLE);
@@ -501,23 +445,12 @@ public class PhotoDetailActivity extends AppCompatActivity
 
     @Override
     public View makeView() {
-        //ImageView i = new ImageView(imageSwitcher.getContext());
         PhotoView i = new PhotoView(imageSwitcher.getContext());
-        //PinchImageView i = new PinchImageView(this);
-//        i.enable();
-//        i.setScaleType(ImageView.ScaleType.CENTER);
         i.setLayoutParams(new ImageSwitcher.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.MATCH_PARENT));
-
         i.setImageURI(Uri.parse(imageInforArrayList.get(currentImageIndex).getImagePath()));
-        //i.setAdjustViewBounds(true);
-        //i.setScaleType(ImageView.ScaleType.FIT_XY);    //解决imageView 左右留有白边的问题
-        //i.setMaximumScale(2.5f);
-//        PhotoView photoView = new PhotoView(imageSwitcher.getContext());
-//        photoView.getScale();
-
         return  i;
     }
-
+    //检测触摸事件是否发生在某个组件
     private boolean isInView(View view,int x,int y)
     {
         if(view == null)
@@ -533,35 +466,26 @@ public class PhotoDetailActivity extends AppCompatActivity
 
         return false;
     }
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.main,menu);
-//        return true;
-//    }
 
 
-    private void initFruits()
+
+    private void initImageList()
     {
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
         imageInforArrayList = new ArrayList<>();
 
         final String[] columns = {MediaStore.Images.Media.DATA ,MediaStore.Images.Media._ID};
         final String orderBy = MediaStore.Images.Media.DATE_ADDED + " desc";  //倒叙查询
-//Stores all the images from the gallery in Cursor
         Cursor cursor = getContentResolver().query(
                 MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null,
                 null, orderBy);
-//Total number of images
         int count = cursor.getCount();
-
-//Create an array to store path to all the images
         String[] arrPath = new String[count];
 
         for (int i = 0; i < count; i++) {
             cursor.moveToPosition(i);
             int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
             int idColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media._ID);
-            //Store the path of the image
             arrPath[i] = cursor.getString(dataColumnIndex);
             Uri fruitUri  = Uri.parse(arrPath[i]);
             String[] fruitInfor = arrPath[i].split("/");
@@ -569,18 +493,24 @@ public class PhotoDetailActivity extends AppCompatActivity
 
             imageInfor fruitItem = new imageInfor(fruitName,arrPath[i],cursor.getLong(idColumnIndex));
             imageInforArrayList.add(fruitItem);
-            Log.i("PATH", arrPath[i]);
+            //Log.i("PATH", arrPath[i]);
         }
-// The cursor should be freed up after use with close()
         cursor.close();
 
 
     }
-
+    //当编辑功能中保存了新的图片，这里的缩略图链表应该更新
     @Override
-    protected void onRestart() {
-        super.onRestart();
-        initFruits();
+    protected void onStart() {
+        super.onStart();
+        initImageList();
         initDetailRecycler();
+    }
+
+
+    public void wifip2p(View view){
+        Intent intent = new Intent(this, WifiActivity.class);
+        intent.putExtra("photoPath",imageInforArrayList.get(currentImageIndex).getImagePath());
+        startActivity(intent);
     }
 }

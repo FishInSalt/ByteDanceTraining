@@ -62,6 +62,7 @@ public class PhotoEditActivity extends AppCompatActivity  {
 
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
 
+        //未保存时会弹出保存确认的提示框
         final AlertDialog.Builder saveConfirm = new AlertDialog.Builder(PhotoEditActivity.this);
         saveConfirm.setTitle("提示");
         saveConfirm.setMessage("图片尚未保存，确认保存？");
@@ -101,7 +102,7 @@ public class PhotoEditActivity extends AppCompatActivity  {
             }
         });
 
-
+        //设置工具栏
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -118,7 +119,7 @@ public class PhotoEditActivity extends AppCompatActivity  {
                 }
             }
         });
-
+        //获取由详情页传来的当前图片的路径并设置
         Intent intent = getIntent();
         final String currentImagePath = intent.getStringExtra("photoPath");
          editImageView = findViewById(R.id.editImageView);
@@ -127,6 +128,9 @@ public class PhotoEditActivity extends AppCompatActivity  {
         final Button drawBtn = findViewById(R.id.paint_button);
         editImageView.setImageURI(Uri.parse(currentImagePath));
         bitmap = BitmapFactory.decodeFile(currentImagePath);
+
+
+        // 旋转按钮的点击事件
         rotateBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -156,6 +160,8 @@ public class PhotoEditActivity extends AppCompatActivity  {
                 }
             }
         });
+
+        //保存按钮的点击事件
         savedBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -175,7 +181,7 @@ public class PhotoEditActivity extends AppCompatActivity  {
                 }
             }
         });
-
+        //涂鸦按钮的点击事件
         drawBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -203,7 +209,7 @@ public class PhotoEditActivity extends AppCompatActivity  {
                 }
             }
         });
-
+        //设置图片的触摸事件，如果在可涂鸦的情况下触摸了图片，那么图片设为已修改状态
         editImageView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
@@ -218,11 +224,7 @@ public class PhotoEditActivity extends AppCompatActivity  {
 
     }
 
-
-
-
-
-    //@NeedsPermission({Manifest.permission.WRITE_EXTERNAL_STORAGE})
+    //保存图片
     public void saveImageToGallery(Context context, Bitmap bmp) {
 
         // 首先保存图片
@@ -251,38 +253,14 @@ public class PhotoEditActivity extends AppCompatActivity  {
             e.printStackTrace();
         }
 
-        // 其次把文件插入到系统图库
-//        try {
-//
-//            MediaStore.Images.Media.insertImage(context.getContentResolver(),
-//                    file.getAbsolutePath(), fileName, null);
-//        } catch (FileNotFoundException e) {
-//
-//            e.printStackTrace();
-//        }
 
 
         // 最后通知图库更新
-        // context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.parse("file://" + path)));
+
         context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(file.getPath()))));
     }
 
 
-//    private boolean isInView(View view,int x,int y)
-//    {
-//        if(view == null)
-//            return false;
-//        int[] location = new int[2];
-//        view.getLocationOnScreen(location);
-//        int left = location[0];
-//        int top = location[1];
-//        int right = left +view.getMeasuredWidth();
-//        int bottom = top +view.getMeasuredHeight();
-//        if(y>=top&&y<=bottom&&x>=left&&x<=right)
-//            return true;
-//
-//        return false;
-//    }
 
 
 }
